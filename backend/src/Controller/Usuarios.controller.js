@@ -7,11 +7,11 @@ const usuario = {};
 
 const modelo = require("../Models/ModelUsuarios.js");
 
-usuario.ObtenerUsuario = async (req, res) => {
+usuario.Get_user = async (req, res) => {
   const { username, password } = req.body;
   const values = [username, password];
 
-  const usuario = await modelo.find({ nombre: username, password: password });
+  const usuario = await modelo.find({ name: username, password: password });
   if (usuario.length > 0) {
     let jwt = usuario[0].keyvalidation;
     res.send(jwt);
@@ -20,7 +20,7 @@ usuario.ObtenerUsuario = async (req, res) => {
   }
 };
 
-usuario.CreateUsuario = async (req, res) => {
+usuario.CreateUser = async (req, res) => {
   jwt(req, res);
 };
 function jwt(req, res) {
@@ -28,11 +28,11 @@ function jwt(req, res) {
     const { username, last_name, password, phone, mail } = req.body;
     const NewUser = new modelo({
       keyvalidation: token,
-      nombre: username,
-      apellido: last_name,
+      name: username,
+      last_name: last_name,
       password: password,
-      telefono: phone,
-      correo: mail,
+      phone: phone,
+      mail: mail,
     });
     NewUser.save();
     res.json({ message: "El usuario ha sido guardao" });
@@ -40,13 +40,12 @@ function jwt(req, res) {
   });
 }
 
-usuario.ObtenerUsua = async (req, res) => {
+usuario.Get_user_mail = async (req, res) => {
   //! El usuario se obtendra mediante el correo
-  const { nombre, apellido, password, telefono, user_mail } = req.body;
-  const values = [nombre, apellido, password, telefono, user_mail];
+  const { user_mail } = req.body;
+  const values = [user_mail];
 
-    console.log(values);
-  const usuario = await modelo.find({ correo: user_mail });
+  const usuario = await modelo.find({ mail: user_mail });
   if (usuario.length > 0) {
     SendMail(user_mail);
     aux = user_mail;
@@ -56,18 +55,18 @@ usuario.ObtenerUsua = async (req, res) => {
   }
 };
 usuario.UpdateUsuario = async (req, res) => {
-  const usuario = await modelo.find({ correo: aux });
+  const usuario = await modelo.find({ mail: aux });
 
   const NewUser = await modelo.updateOne(
     { _id: usuario[0]._id },
     {
       $set: {
         keyvalidation: usuario[0].keyvalidation,
-        nombre: usuario[0].nombre,
-        apellido: usuario[0].apellido,
+        name: usuario[0].name,
+        last_name: usuario[0].last_name,
         password: req.body.password,
-        telefono: usuario[0].telefono,
-        correo: usuario[0].correo,
+        phone: usuario[0].phone,
+        mail: usuario[0].mail,
       },
     }
   );
@@ -79,7 +78,7 @@ usuario.UpdateUsuario = async (req, res) => {
 };
 
 //TODO: --IMPORTANTE--    Falta crear clave y crear verificacion    --IMPORTANTE--
-usuario.VerificarCodigo = async (req, res) => {
+usuario.Verify_Code = async (req, res) => {
   const codeUser = req.body;
   if (code !== codeUser.code) {
     res.send({ message: "Incorrect verification code" });

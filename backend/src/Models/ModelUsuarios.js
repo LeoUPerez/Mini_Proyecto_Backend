@@ -2,11 +2,11 @@ const {Schema, model} = require('mongoose');
 
 const SchemeUser = new Schema({
     keyvalidation: String,
-    nombre: String,
-    apellido: String,
+    name: String,
+    last_name: String,
     password: String,
-    telefono: Number,
-    correo: String
+    phone: Number,
+    mail: String
 })
 
 module.exports = model('Usuario', SchemeUser);
