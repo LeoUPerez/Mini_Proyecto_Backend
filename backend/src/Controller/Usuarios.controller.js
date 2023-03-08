@@ -16,7 +16,7 @@ usuario.ObtenerUsuario = async (req, res) => {
     let jwt = usuario[0].keyvalidation;
     res.send(jwt);
   } else {
-    res.json({ message: "Usuario no encontrado" });
+    res.json({ message: "user not found" });
   }
 };
 
@@ -25,16 +25,16 @@ usuario.CreateUsuario = async (req, res) => {
 };
 function jwt(req, res) {
   jwtv.sign({ user: modelo }, "secretkey", (err, token) => {
-    const { username, apellido, password, telefono, correo } = req.body;
-    const NuevoUsuario = new modelo({
+    const { username, last_name, password, phone, mail } = req.body;
+    const NewUser = new modelo({
       keyvalidation: token,
       nombre: username,
-      apellido: apellido,
+      apellido: last_name,
       password: password,
-      telefono: telefono,
-      correo: correo,
+      telefono: phone,
+      correo: mail,
     });
-    NuevoUsuario.save();
+    NewUser.save();
     res.json({ message: "El usuario ha sido guardao" });
     // console.log(token);
   });
@@ -42,22 +42,19 @@ function jwt(req, res) {
 
 usuario.ObtenerUsua = async (req, res) => {
   //! El usuario se obtendra mediante el correo
-  const { nombre, apellido, password, telefono, correo } = req.body;
-  const values = [nombre, apellido, password, telefono, correo];
+  const { nombre, apellido, password, telefono, user_mail } = req.body;
+  const values = [nombre, apellido, password, telefono, user_mail];
 
-  const usuario = await modelo.find({ correo: correo });
+    console.log(values);
+  const usuario = await modelo.find({ correo: user_mail });
   if (usuario.length > 0) {
-    SendMail(correo);
-    aux = correo;
+    SendMail(user_mail);
+    aux = user_mail;
     res.send(usuario);
   } else {
-    res.json({ message: "Usuario no encontrado" });
+    res.json({ message: "user not found" });
   }
 };
-// usuario.DeleteUsuario = async (req, res) =>{
-//     await modelo.findByIdAndDelete(req.params.id);
-//     res.json({message: "Usuario ha sido eliminao"})
-// }
 usuario.UpdateUsuario = async (req, res) => {
   const usuario = await modelo.find({ correo: aux });
 
@@ -85,7 +82,7 @@ usuario.UpdateUsuario = async (req, res) => {
 usuario.VerificarCodigo = async (req, res) => {
   const codeUser = req.body;
   if (code !== codeUser.code) {
-    res.send({ message: "Codigo de verificacion incorrecto" });
+    res.send({ message: "Incorrect verification code" });
   } else {
     res.send(codeUser);
   }
