@@ -19,6 +19,8 @@ app.get('/', (req, res)=>{
 })
 
 // Ruta para api de usuario
-app.use('/api/usuarios', require('./routes/usuario'));
+app.use('/api/usuarios', require('./Routes/Routes_Usuario'));
+app.use('/api/realestate', require('./Routes/Routes_RealEstate'));
+
 
 module.exports = app;
