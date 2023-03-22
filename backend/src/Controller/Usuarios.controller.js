@@ -33,62 +33,95 @@ function jwt(req, res) {
       password: password,
       phone: phone,
       mail: mail,
-      balance: 0
+      balance: 0,
     });
     NewUser.save();
     res.json({ message: "El usuario ha sido guardao" });
-    // console.log(token);
   });
 }
 
 usuario.ProfileUser = async (req, res) => {
   const nameuser = req.params.id;
-  const Usuario = await modelo.find({name: nameuser});
-  const DataUser = [Usuario[0].name, Usuario[0].last_name, Usuario[0].mail, Usuario[0].phone, Usuario[0].card.balance];
-  res.send(DataUser)
+  const Usuario = await modelo.find({ name: nameuser });
+  const DataUser = [
+    Usuario[0].name,
+    Usuario[0].last_name,
+    Usuario[0].mail,
+    Usuario[0].phone,
+    Usuario[0].card.balance,
+  ];
+  res.send(DataUser);
+};
 
-}
+usuario.EditBalance = async (req, res) => {
+  const { token, newbalance } = req.body;
+  const usuario = await modelo.find({ keyvalidation: token });
+  const newBalance = await modelo.updateOne(
+    { _id: usuario[0]._id },
+    {
+      $set: {
+        keyvalidation: usuario[0].keyvalidation,
+        name: usuario[0].name,
+        last_name: usuario[0].last_name,
+        password: usuario[0].password,
+        phone: usuario[0].phone,
+        mail: usuario[0].mail,
+        card: {
+          card_number: usuario[0].card.card_number,
+          expiration_year: usuario[0].card.expiration_year,
+          expiration_month: usuario[0].card.expiration_month,
+          verification_code: usuario[0].card.verification_code,
+          balance: parseInt(newbalance),
+        },
+      },
+    },
+    { upsert: true }
+  );
+
+  res.send("Balance actualizado");
+};
 
 usuario.Get_user_mail = async (req, res) => {
-  //! El usuario se obtendra mediante el correo
   const { user_mail } = req.body;
   const values = [user_mail];
-
 
   const usuario = await modelo.find({ mail: user_mail });
   if (usuario.length > 0) {
     SendMail(user_mail);
     aux = user_mail;
     res.send(usuario[0].keyvalidation);
-    // console.log(usuario[0].keyvalidation);
   } else {
     res.json({ message: "user not found" });
   }
 };
 usuario.UpdateUsuario = async (req, res) => {
-  let card_number, expiration_year, expiration_month, verification_code, balance;
+  let card_number,
+    expiration_year,
+    expiration_month,
+    verification_code,
+    balance;
   const token = req.params.id;
-  const verify = jwtv.decode(token)
+  const verify = jwtv.decode(token);
   console.log(verify);
   console.log(token);
-  let change = ''
+  let change = "";
 
-  if (verify!==null) {
+  if (verify !== null) {
     const usuario = await modelo.find({ keyvalidation: token });
     if (req.body.password === undefined) {
-      change=usuario[0].password;
-      card_number=req.body.card_number;
-      expiration_year=req.body.expiration_year;
-      expiration_month=req.body.expiration_month;
-      verification_code=req.body.verification_code;
-      balance=req.body.balance;
-    }else{
-      change=req.body.password;
-      card_number=usuario[0].card.card_number;
-      expiration_year=usuario[0].card.expiration_year;
-      expiration_month=usuario[0].card.expiration_month;
-      verification_code=usuario[0].card.verification_code;
-      balance=usuario[0].card.balance;
+      change = usuario[0].password;
+      card_number = req.body.card_number;
+      expiration_year = req.body.expiration_year;
+      expiration_month = req.body.expiration_month;
+      verification_code = req.body.verification_code;
+      balance = req.body.balance;
+    } else {
+      change = req.body.password;
+      card_number = usuario[0].card.card_number;
+      expiration_year = usuario[0].card.expiration_year;
+      expiration_month = usuario[0].card.expiration_month;
+      verification_code = usuario[0].card.verification_code;
+      balance = usuario[0].card.balance;
     }
 
     const NewUser = await modelo.updateOne(
@@ -106,39 +139,35 @@ usuario.UpdateUsuario = async (req, res) => {
             expiration_year: expiration_year,
             expiration_month: expiration_month,
             verification_code: verification_code,
-            balance: balance
-          }
-        }
+            balance: balance,
+          },
+        },
       },
-      {upsert: true}
+      { upsert: true }
     );
-  
+
     console.log(NewUser);
     res.send({ message: "Usuario Actualizado" });
     aux = "";
-  }else{
-    res.json({message: "Token not valid"})
+  } else {
+    res.json({ message: "Token not valid" });
   }
-
 };
 
-//TODO: --IMPORTANTE--    Falta crear clave y crear verificacion    --IMPORTANTE--
 usuario.Verify_Code = async (req, res) => {
   const token = req.params.id;
-  const verify = jwtv.decode(token)
+  const verify = jwtv.decode(token);
 
-  if (verify!==null) {
+  if (verify !== null) {
     const codeUser = req.body;
     if (code !== codeUser.code) {
       res.send({ message: "Incorrect verification code" });
     } else {
       res.send(codeUser);
     }
-  }else{
-    res.json({message: "Token not valid"})
+  } else {
+    res.json({ message: "Token not valid" });
   }
-
-
 };
 
 SendMail = async (correo) => {
@@ -166,15 +195,13 @@ SendMail = async (correo) => {
           </div>
       </div>
   </body>
-  </html>`
-  // ! Es la configuracion que exige nodemailer para el envio del correo.
-  // * Se debe crear la clave temporal en google para las aplicaciones, además de que se debe asignar la ip en uso en mongoDB atlas a la hora de hacer peticiones al backend
+  </html>`;
   const confing = {
     host: "smtp.gmail.com",
     port: 587,
     auth: {
       user: "state.real.inf@gmail.com",
-      pass: "znyaxxuztgwrepuz", //TODO => Crear contraseña de aplicaciones temporal
+      pass: "znyaxxuztgwrepuz",
     },
   };
   const transport = nodemailer.createTransport(confing);
@@ -184,11 +211,8 @@ SendMail = async (correo) => {
     to: correo,
     html: plantilla,
     subject: "Verification code",
-
-    // text: `Your verification code is: ${code}`
   };
   const info = await transport.sendMail(mensaje);
-
 };
 
 module.exports = usuario;
